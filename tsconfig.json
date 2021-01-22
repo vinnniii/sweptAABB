@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "alwaysStrict": true,
+      "noUnusedLocals": true,
+      "noImplicitAny": true,
+      "noImplicitReturns":true,
+      "noImplicitThis": true,
+      "strict": true,
+      "allowJs": false,
+      "target": "ES6"
+    },
+    "include": [
+      "./script.ts",
+    ]
+  }
