@@ -2,7 +2,8 @@ import { Player } from "./classes/Player.js";
 import { Rect } from "./classes/Rect.js";
 import { Vec2d } from "./classes/Vec2d.js";
 import { CollisionObject } from "./classes/CollisionObject.js";
-import { players } from "./script.js"; 
+import { Collision } from "./classes/Collision.js"
+//import { players } from "./script.js"; 
 
 
 interface iStaticCollisonObj
@@ -20,11 +21,19 @@ interface iDynamicCollisonObj extends iStaticCollisonObj
     dy:number; 
 }
 
-function signum(x: number): number {
+/*function signum(x: number): number {
     return x > 0 ? 1 : x < 0 ? -1 : 0
+}*/
+
+function aabb_overlap(b1: iStaticCollisonObj, b2: iStaticCollisonObj) {
+
+    if(b1.x < b2.x + b2.w && b1.x + b1.w > b2.x && b1.y < b2.y + b2.h && b1.y + b1.h > b2.y)
+        return 1;
+
+    return 0;
 }
 
-function GetSweptBroadphaseBox(player: iDynamicCollisonObj): Rect 
+function create_broadphasebox(player: iDynamicCollisonObj): Rect 
 { 
     let broadphasebox:Rect = new Rect(0,0,0,0); 
 
@@ -155,7 +164,7 @@ export function collisionHandlerStatic(player: Player, rects: Array<Rect>)
     // Optimization
     let rects_to_check: Array<Rect> = [];
     
-    let check_box = GetSweptBroadphaseBox(player);
+    let check_box = create_broadphasebox(player);
 
     for(const rect of rects)
     {
@@ -252,36 +261,127 @@ export function sweptAABBDynamic(p1: Player, p2: Player)
 
     let collision = sweptAABB(testObjDynamic, testObjStatic);
 
+    
     if(collision)
         resolveCollisionDynamic(p1, p2, collision.normal, collision.entryTime);
+    
 }
 
-function collisionHandlerDynamic(p1: any)
-{
-    let check_box = GetSweptBroadphaseBox(p1);
-    // Player player collisions
 
-    for(const p2 of players)
-    {
-        if(p1 == p2) continue;
+function swept_aabb_dynamic(p1: Player, p2: Player): { normal: Vec2d, entryTime: number} | null {
 
-        let check_box2 = GetSweptBroadphaseBox(p2);
+    let rel_vel_dx = p2.dx - p1.dx;
+    let rel_vel_dy = p2.dy - p1.dy;
 
-        if(check_box.x < check_box2.x + check_box2.w && check_box.x + check_box.w > check_box2.x && 
-            check_box.y < check_box2.y + check_box2.h && check_box.y + check_box.h > check_box2.y)
-        {
-            console.log("AAAA");
-            let rel_vel_dx = p2.dx - p1.dx;
-            let rel_vel_dy = p2.dy - p1.dy;
-        
-            let testObjDynamic = new CollisionObject(p2.x, p2.y, p2.w, p2.h, rel_vel_dx, rel_vel_dy);
+    let testObjDynamic = new CollisionObject(p2.x, p2.y, p2.w, p2.h, rel_vel_dx, rel_vel_dy);
 
-            let collision = sweptAABB(testObjDynamic, p2);
+    let testObjStatic = new CollisionObject(p1.x, p1.y, p1.w, p1.h,0,0);
 
-            if(collision) console.log("aa");
+    let collision = sweptAABB(testObjDynamic, testObjStatic);
 
-            if(collision)
-                resolveCollisionDynamic(p1, p2, collision.normal, collision.entryTime);
+    return collision;
+    
+}
+
+function resolve_collision_dynamic(collision:Collision) {
+
+    let r_time:number = 1 - collision.entryTime;
+    
+    collision.obj_1.x -= collision.obj_1.dx * r_time; 
+    collision.obj_1.y -= collision.obj_1.dy * r_time;
+    
+    collision.obj_2.x -= collision.obj_2.dx * r_time; 
+    collision.obj_2.y -= collision.obj_2.dy * r_time;
+    
+    let tempx = (collision.obj_1.dx + collision.obj_2.dx)/2, tempy = (collision.obj_1.dy + collision.obj_2.dy)/2;
+
+    collision.obj_1.dx = tempx; collision.obj_1.dy = tempy;
+    collision.obj_2.dx = tempx; collision.obj_2.dy = tempy;
+
+}
+
+function resolve_collision_static(collision:Collision) {
+
+    let r_time: number = 1 - collision.entryTime;
+
+    if(collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
+    if(collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;
+
+
+}
+
+function handle_collision(players: Array<Player>, player: Player, rects:Array<Rect>, index:number) {
+
+    let collisions:Array<Collision> = [];
+
+    let box_i = create_broadphasebox(player);
+
+
+    for(let i = 0; i < rects.length; i++) {
+
+        if(aabb_overlap(box_i, rects[i])) {
+            
+            let collision = sweptAABB(player, rects[i]);
+
+            if(collision) {
+
+                let c = new Collision(player, rects[i],collision.normal, collision.entryTime);                             
+                collisions.push(c);
+            }
         }
+
     }
+
+
+    for(let j = 0; j < players.length; j++) {
+
+        let box_j = create_broadphasebox(players[j]);
+
+        if(aabb_overlap(box_i, box_j)) {
+
+            let collision = swept_aabb_dynamic(player, players[j]);
+
+            if(collision) {
+
+                let c = new Collision(player, players[j], collision.normal, collision.entryTime);            
+                collisions.push(c);              
+            }
+
+        }
+
+    }
+
+
+    
+    if(collisions.length > 0) { 
+
+        collisions.sort((a, b) => (a.entryTime < b.entryTime ? -1 : 1));
+        
+
+        if(collisions[0].obj_2.dx != undefined) {
+
+            resolve_collision_dynamic(collisions[0]);
+
+        }
+        else {
+
+            resolve_collision_static(collisions[0]);
+
+        }
+
+        handle_collision(players, player, rects, index);
+    }
+
 }
+
+
+export function game_collision(players: Array<Player>, rects: Array<Rect>) {
+
+    for(let i = 0; i < players.length; i++) {
+
+        handle_collision(players, players[i], rects, i+1);
+
+    }
+
+}
+

@@ -12,6 +12,7 @@ export class Player {
         this.dxnext = 0;
         this.dynext = 0;
         this.onSolid = false;
+        this.hasCollided = false;
         //this.pos = pos;
         //this.dim = dim;
         //this.vel = vel;

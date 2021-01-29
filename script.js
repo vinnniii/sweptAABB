@@ -2,7 +2,8 @@
 import { Player } from "./classes/Player.js";
 import { Rect } from "./classes/Rect.js";
 import { Vec2d } from "./classes/Vec2d.js";
-import { collisionHandlerStatic, sweptAABBDynamic } from "./collision.js";
+//import { collisionHandlerStatic , sweptAABBDynamic } from "./collision.js";
+import { game_collision } from "./collision.js";
 let canvas;
 let ctx;
 let mouse = new Vec2d(0, 0);
@@ -13,6 +14,7 @@ let bot = new Player(600, 400, 40, 40, 1, 0.5);
 export let players = [];
 players.push(player);
 players.push(bot);
+players.push(new Player(450, 400, 40, 40, -1, 1));
 window.onload = () => {
     canvas = document.getElementById('cnvs');
     let ctx1 = canvas.getContext("2d");
@@ -41,19 +43,30 @@ window.onload = () => {
 function run() {
     player.dx = (mouse.x - player.x) / 100;
     player.dy = (mouse.y - player.y) / 100;
-    for (const player of players) {
+    /*
+    for(const player of players)
+    {
         collisionHandlerStatic(player, rects);
     }
-    for (const player of players) {
+
+    
+    for(const player of players)
+    {
         sweptAABBDynamic(player, bot);
-        //collisionHandlerDynamic(player);
     }
-    for (const player of players) {
+
+    for(const player of players)
+    {
         collisionHandlerStatic(player, rects);
     }
+    */
+    game_collision(players, rects);
     for (const player of players) {
-        player.x += player.dx;
-        player.y += player.dy;
+        if (!player.hasCollided) {
+            player.x += player.dx;
+            player.y += player.dy;
+        }
+        player.hasCollided = false;
     }
 }
 function render() {
