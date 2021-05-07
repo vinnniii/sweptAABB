@@ -45,7 +45,7 @@ function create_broadphasebox(player: iDynamicCollisonObj): Rect
     return broadphasebox; 
 }
 
-function sweptAABB(b1: iDynamicCollisonObj, b2: iStaticCollisonObj): {normal: Vec2d, entryTime: number} | null
+function swept_AABB(b1: iDynamicCollisonObj, b2: iStaticCollisonObj): {normal: Vec2d, entryTime: number} | null
 {
     let entry_x:number, entry_y:number; 
     let exit_x:number, exit_y:number; 
@@ -147,110 +147,7 @@ function sweptAABB(b1: iDynamicCollisonObj, b2: iStaticCollisonObj): {normal: Ve
 
 }
 
-function resolveCollision(player: Player, normal: Vec2d, entryTime: number)
-{
-
-    if(normal.x != 0) player.dx -= player.dx * (1 - entryTime);
-    if(normal.y != 0) player.dy -= player.dy * (1 - entryTime);
-
-    //player.dx += normal.x * Math.abs(player.dx) * (1 - entryTime);
-    //player.dy += normal.y * Math.abs(player.dy) * (1 - entryTime);
-    
-    
-}
-
-export function collisionHandlerStatic(player: Player, rects: Array<Rect>)
-{
-    // Optimization
-    let rects_to_check: Array<Rect> = [];
-    
-    let check_box = create_broadphasebox(player);
-
-    for(const rect of rects)
-    {
-        if(check_box.x < rect.x + rect.w && check_box.x + check_box.w > rect.x && 
-            check_box.y < rect.y + rect.h && check_box.y + check_box.h > rect.y)
-        {
-            rects_to_check.push(rect);
-        }
-    }
-    
-    // No collisions possible
-    if(rects_to_check.length === 0) return;
-
-    // Add collision to array
-    let arr: Array<{index: number, entryTime: number}> = [];
-    let index = 0;
-
-    for(const rect of rects_to_check)
-    {
-        let collision = sweptAABB(player, rect);
-
-        if(collision) arr.push({index: index, entryTime: collision.entryTime});
-
-        index++;
-    }
-
-    // No collisions
-    if(arr.length === 0) return;
-
-    // Sort by distance
-    arr.sort(function(a, b)
-    {
-        return a.entryTime - b.entryTime;
-    });
-
-    if(arr.length > 1) console.log(rects_to_check[arr[0].index], rects_to_check[arr[1].index]);
-    
-    // resolve 
-
-    if(arr)
-    {
-        console.log(arr.length);
-        
-        for(let i = 0; i < arr.length; i++)
-        {
-            let collision = sweptAABB(player, rects_to_check[arr[i].index]);
-
-            if(collision) 
-            {   
-                resolveCollision(player, collision.normal, collision.entryTime); 
-                
-                if(collision.normal.x === 0 && collision.normal.y === -1) player.onSolid = true;
-            }
-
-        };
-
-
-    }
-
-    return;
-
-}
-
-function resolveCollisionDynamic(p1: Player, p2: Player, normal: Vec2d, entryTime: number)
-{
-    let rTime:number = 1 - entryTime;
- 
-    // Update location
-
-    p1.x -= p1.dx * rTime; p1.y -= p1.dy * rTime;
-
-    p2.y -= p2.dy * rTime; p2.x -= p2.dx * rTime;
-
-    
-    // New velocity
-
-    let tempx = (p1.dx + p2.dx) / 2, tempy = (p1.dy + p2.dy) / 2;
-
-    p1.dx = tempx; p1.dy = tempy;
-
-    p2.dx = tempx; p2.dy = tempy;
-    
-
-}
-
-export function sweptAABBDynamic(p1: Player, p2: Player)
+function swept_AABB_dynamic(p1: Player, p2: Player): { normal: Vec2d, entryTime: number} | null 
 {
     let rel_vel_dx = p2.dx - p1.dx;
     let rel_vel_dy = p2.dy - p1.dy;
@@ -259,59 +156,14 @@ export function sweptAABBDynamic(p1: Player, p2: Player)
 
     let testObjStatic = new CollisionObject(p1.x, p1.y, p1.w, p1.h,0,0);
 
-    let collision = sweptAABB(testObjDynamic, testObjStatic);
-
-    
-    if(collision)
-        resolveCollisionDynamic(p1, p2, collision.normal, collision.entryTime);
-    
-}
-
-
-function swept_aabb_dynamic(p1: Player, p2: Player): { normal: Vec2d, entryTime: number} | null {
-
-    let rel_vel_dx = p2.dx - p1.dx;
-    let rel_vel_dy = p2.dy - p1.dy;
-
-    let testObjDynamic = new CollisionObject(p2.x, p2.y, p2.w, p2.h, rel_vel_dx, rel_vel_dy);
-
-    let testObjStatic = new CollisionObject(p1.x, p1.y, p1.w, p1.h,0,0);
-
-    let collision = sweptAABB(testObjDynamic, testObjStatic);
+    let collision = swept_AABB(testObjDynamic, testObjStatic);
 
     return collision;
     
 }
 
-function resolve_collision_dynamic(collision:Collision) {
-
-    let r_time:number = 1 - collision.entryTime;
-    
-    collision.obj_1.x -= collision.obj_1.dx * r_time; 
-    collision.obj_1.y -= collision.obj_1.dy * r_time;
-    
-    collision.obj_2.x -= collision.obj_2.dx * r_time; 
-    collision.obj_2.y -= collision.obj_2.dy * r_time;
-    
-    let tempx = (collision.obj_1.dx + collision.obj_2.dx)/2, tempy = (collision.obj_1.dy + collision.obj_2.dy)/2;
-
-    collision.obj_1.dx = tempx; collision.obj_1.dy = tempy;
-    collision.obj_2.dx = tempx; collision.obj_2.dy = tempy;
-
-}
-
-function resolve_collision_static(collision:Collision) {
-
-    let r_time: number = 1 - collision.entryTime;
-
-    if(collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
-    if(collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;
-
-
-}
-
-function handle_collision(players: Array<Player>, player: Player, rects:Array<Rect>, index:number) {
-
+function get_collisions(players: Array<Player>, player: Player, rects:Array<Rect>) : Array<Collision>
+{
     let collisions:Array<Collision> = [];
 
     let box_i = create_broadphasebox(player);
@@ -321,7 +173,7 @@ function handle_collision(players: Array<Player>, player: Player, rects:Array<Re
 
         if(aabb_overlap(box_i, rects[i])) {
             
-            let collision = sweptAABB(player, rects[i]);
+            let collision = swept_AABB(player, rects[i]);
 
             if(collision) {
 
@@ -339,7 +191,7 @@ function handle_collision(players: Array<Player>, player: Player, rects:Array<Re
 
         if(aabb_overlap(box_i, box_j)) {
 
-            let collision = swept_aabb_dynamic(player, players[j]);
+            let collision = swept_AABB_dynamic(player, players[j]);
 
             if(collision) {
 
@@ -351,6 +203,53 @@ function handle_collision(players: Array<Player>, player: Player, rects:Array<Re
 
     }
 
+    return collisions;
+}
+
+function resolve_collision_dynamic(collision:Collision) 
+{
+    let r_time:number = 1 - collision.entryTime;
+    
+    collision.obj_1.x -= collision.obj_1.dx * r_time; 
+    collision.obj_1.y -= collision.obj_1.dy * r_time;
+    
+    collision.obj_2.x -= collision.obj_2.dx * r_time; 
+    collision.obj_2.y -= collision.obj_2.dy * r_time;
+    
+    let tempx = (collision.obj_1.dx + collision.obj_2.dx)/2, tempy = (collision.obj_1.dy + collision.obj_2.dy)/2;
+
+    collision.obj_1.dx = tempx; collision.obj_1.dy = tempy;
+    collision.obj_2.dx = tempx; collision.obj_2.dy = tempy;
+
+}
+
+function resolve_collision_static(collision:Collision) 
+{
+    let r_time: number = 1 - collision.entryTime;
+
+    if(collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
+    if(collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;
+
+    /*if(collision.normal.x == 1) collision.obj_1.col_l = true;
+    else if(collision.normal.x == -1) collision.obj_1.col_r = true;
+    if(collision.normal.y == 1) collision.obj_1.col_u = true;
+    else if(collision.normal.y == -1) collision.obj_1.col_d = true;*/
+}
+
+
+function adjust_velocity(collision: Collision)
+{
+    let tempx = (collision.obj_1.dx + collision.obj_2.dx)/2, tempy = (collision.obj_1.dy + collision.obj_2.dy)/2;
+
+    collision.obj_1.dx = tempx; collision.obj_1.dy = tempy;
+    collision.obj_2.dx = tempx; collision.obj_2.dy = tempy;
+
+}
+
+
+export function handle_collision(players: Array<Player>, player: Player, rects:Array<Rect>, index:number) 
+{
+    let collisions: Array<Collision> = get_collisions(players, player, rects);
 
     
     if(collisions.length > 0) { 
@@ -375,11 +274,54 @@ function handle_collision(players: Array<Player>, player: Player, rects:Array<Re
 }
 
 
+export function handle_collision_recursive(players: Array<Player>, player: Player, rects: Array<Rect>) 
+{
+
+    let collisions: Array<Collision> = get_collisions(players, player, rects);
+
+
+    if(collisions.length == 0) 
+        return;
+
+
+    collisions.sort((a, b) => (a.entryTime < b.entryTime ? -1 : 1));
+
+    if(collisions[0].obj_2.dx != undefined) {
+        // Test Collision with other Dynamic Object first before resolution.
+        
+        // Adjust Velocity to avoid infinite recursion / simulate collision
+        
+        adjust_velocity(collisions[0]);
+
+        handle_collision_recursive(players, collisions[0].obj_2, rects);
+        
+    }
+    else {
+
+        resolve_collision_static(collisions[0]);
+
+    }
+
+
+    handle_collision_recursive(players, player, rects);
+
+
+}
+
+
+
 export function game_collision(players: Array<Player>, rects: Array<Rect>) {
 
     for(let i = 0; i < players.length; i++) {
 
-        handle_collision(players, players[i], rects, i+1);
+        //handle_collision(players, players[i], rects, i+1);
+        
+        players[i].col_d = false;
+        players[i].col_l = false;
+        players[i].col_u = false;
+        players[i].col_r = false;
+
+        handle_collision_recursive(players, players[i], rects);
 
     }
 

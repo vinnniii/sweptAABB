@@ -80,13 +80,9 @@ function run()
 
     for(const player of players) {
 
-        if(!player.hasCollided) {
+        player.x += player.dx;
+        player.y += player.dy;
 
-            player.x += player.dx;
-            player.y += player.dy;
-        }
-
-        player.hasCollided = false;
     }
     
 
@@ -97,15 +93,15 @@ function render()
     ctx.fillStyle = "blue";
     ctx.fillRect(0,0,ctx.canvas.width, ctx.canvas.height);
 
-    for(const rect of rects)
-    {
+    for(const rect of rects) {
+
         ctx.strokeStyle = "white";
         ctx.lineWidth = 2;
         ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
     }
+    
+    for(const player of players) {
 
-    for(const player of players)
-    {
         ctx.strokeStyle = "white";
         ctx.lineWidth = 2;
         ctx.strokeRect(player.x, player.y, player.w, player.h);

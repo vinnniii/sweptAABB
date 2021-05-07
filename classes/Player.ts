@@ -9,7 +9,10 @@ export class Player
     dxnext:number;
     dynext:number;
     onSolid: boolean;
-    hasCollided: boolean;
+    col_r: boolean;
+    col_l: boolean;
+    col_u: boolean;
+    col_d: boolean;
     //pos: Vec2;
     //dim: Vec2;
     //vel: Vec2;
@@ -25,7 +28,10 @@ export class Player
         this.dxnext = 0;
         this.dynext = 0;
         this.onSolid = false;
-        this.hasCollided = false;
+        this.col_d = false;
+        this.col_l = false;
+        this.col_r = false;
+        this.col_u = false;
         //this.pos = pos;
         //this.dim = dim;
         //this.vel = vel;
