@@ -191,8 +191,12 @@ function resolve_collision(collision: Collision) {
 
   if (collision.obj_1 instanceof Player && collision.obj_2 instanceof Player) {
 
-    let tempx = (collision.obj_1.dx + collision.obj_2.dx) / 2
-    let tempy = (collision.obj_1.dy + collision.obj_2.dy) / 2
+    collision.obj_1.remainingTime -= r_time;
+
+    let dx1 = collision.obj_1.dx
+    let dx2 = collision.obj_2.dx;
+    let dy1 = collision.obj_1.dy;
+    let dy2 = collision.obj_2.dy;
 
     collision.obj_1.x -= collision.obj_1.dx * r_time;
     collision.obj_1.y -= collision.obj_1.dy * r_time;
@@ -200,23 +204,25 @@ function resolve_collision(collision: Collision) {
     collision.obj_2.x -= collision.obj_2.dx * r_time;
     collision.obj_2.y -= collision.obj_2.dy * r_time;
 
+    collision.obj_1.dx = dx2; 
+    collision.obj_1.dy = dy2; 
+    collision.obj_2.dx = dx1; 
+    collision.obj_2.dy = dy1;
 
-    collision.obj_1.dx = tempx; collision.obj_1.dy = tempy;
-    collision.obj_2.dx = tempx; collision.obj_2.dy = tempy;
-  } else if (collision.obj_1 instanceof Player && collision.obj_2 instanceof Rect) {
+  } 
+  else if (collision.obj_1 instanceof Player && collision.obj_2 instanceof Rect) {
+
     if (collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
     if (collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;
-  } else {
+
+  } 
+  else {
+
     throw ("resolve_collision  need to players or a player and a rect")
+
   }
+
 }
-
-
-/*if(collision.normal.x == 1) collision.obj_1.col_l = true;
-else if(collision.normal.x == -1) collision.obj_1.col_r = true;
-if(collision.normal.y == 1) collision.obj_1.col_u = true;
-else if(collision.normal.y == -1) collision.obj_1.col_d = true;*/
-
 
 
 function adjust_velocity(collision: Collision) {
@@ -245,7 +251,7 @@ export function handle_collision(players: Array<Player>, player: Player, rects: 
 }
 
 
-export function handle_collision_recursive(players: Array<Player>, player: Player, rects: Array<Rect>) {
+export function handle_collision_recursive(players: Array<Player>, player: Player, rects: Array<Rect>, collider: Player | null) {
 
   let collisions: Array<Collision> = get_collisions(players, player, rects);
 
@@ -259,20 +265,20 @@ export function handle_collision_recursive(players: Array<Player>, player: Playe
   if (collisions[0].obj_2 instanceof Player) {
     // Test Collision with other Dynamic Object first before resolution.
 
-    // Adjust Velocity to avoid infinite recursion / simulate collision
+    if(collisions[0].obj_2 === collider)
+      resolve_collision(collisions[0])
 
-    adjust_velocity(collisions[0]);
+    else handle_collision_recursive(players, collisions[0].obj_2, rects, player);
 
-    handle_collision_recursive(players, collisions[0].obj_2, rects);
-
-  } else {
+  } 
+  else {
 
     resolve_collision(collisions[0]);
 
   }
 
 
-  handle_collision_recursive(players, player, rects);
+  handle_collision_recursive(players, player, rects, null);
 
 
 }
@@ -283,14 +289,9 @@ export function game_collision(players: Array<Player>, rects: Array<Rect>) {
 
   for (let i = 0; i < players.length; i++) {
 
-  //  handle_collision(players, players[i], rects, i + 1);
+    //handle_collision(players, players[i], rects, i + 1);
 
-    players[i].col_d = false;
-    players[i].col_l = false;
-    players[i].col_u = false;
-    players[i].col_r = false;
-
-    handle_collision_recursive(players, players[i], rects);
+    handle_collision_recursive(players, players[i], rects, null);
 
   }
 
