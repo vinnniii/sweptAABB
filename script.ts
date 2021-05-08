@@ -11,14 +11,14 @@ let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D;
 
 let mouse = new Vec2d(0, 0);
-let player = new Player(500, 400, 40, 40, 0, 0,/* new Vec2(500,400), new Vec2(40,40), new Vec2(0,0)*/);
+//let player = new Player(500, 400, 40, 40, 0, 0,/* new Vec2(500,400), new Vec2(40,40), new Vec2(0,0)*/);
 let rects: Array<Rect> = [];
 //let posQueue: Array<Vec2d> = [];
-let bot = new Player(600, 400, 40, 40, 1, 0.5, /*new Vec2(600,400), new Vec2(40,40), new Vec2(1,0.5)*/);
+//let bot = new Player(600, 400, 40, 40, 1, 0.5, /*new Vec2(600,400), new Vec2(40,40), new Vec2(1,0.5)*/);
 
 export let players: Array<Player> = [];
-players.push(player); players.push(bot);
-players.push(new Player(450, 400, 40, 40, -1, 1));
+//players.push(player); players.push(bot);
+//players.push(new Player(450, 400, 40, 40, -1, 1));
 
 let runIntervall: number = 0;
 
@@ -33,13 +33,14 @@ function runTest(name: string) {
   players = [];
   rects = [];
 
-  const s=  50; 
-  
+  const s = parseFloat((<HTMLSelectElement>document.getElementById("speed")).value);
+
+
 
   const t = tests.filter(t => t.name === name)[0];
   if (t) {
     for (const p of t.players) {
-      players.push(new Player(p.x, p.y, 40, 40, p.dx* s, p.dy* s))
+      players.push(new Player(p.x, p.y, 40, 40, p.dx * s, p.dy * s))
     }
     for (const r of t.walls) {
       rects.push(new Rect(r.x, r.y, r.w, r.h))
@@ -48,23 +49,30 @@ function runTest(name: string) {
       rects.push(new Rect(r.x, r.y, r.w, r.h))
     }
   }
-  window.setInterval(run, 1000)
+  let interval = 100;
+  switch(s) {
+    case 10: interval = 400; break;
+    case 50: interval = 1000; break;
+    case 100: interval = 1000; break;
+  }
+  
+  window.setInterval(run, interval)
 
 }
 
 window.onload = () => {
 
-const buttons = <HTMLDivElement>window.document.getElementById("buttons");
-if (buttons) {
-  for (const t of tests) {
-    const b = document.createElement("button");
-    b.textContent = t.name;
-    b.onclick = () => {
-      runTest(t.name);
+  const buttons = <HTMLDivElement>window.document.getElementById("buttons");
+  if (buttons) {
+    for (const t of tests) {
+      const b = document.createElement("button");
+      b.textContent = t.name;
+      b.onclick = () => {
+        runTest(t.name);
+      }
+      buttons.appendChild(b);
     }
-    buttons.appendChild(b);
   }
-}
 
 
   canvas = <HTMLCanvasElement>document.getElementById('cnvs');
@@ -76,40 +84,43 @@ if (buttons) {
   ctx.canvas.height = 600;
 
   //rects.push(new Rect(0,800,100,20));
-  rects.push(new Rect(400, 600, 100, 20));
+  /*rects.push(new Rect(400, 600, 100, 20));
   rects.push(new Rect(500, 600, 100, 20));
   rects.push(new Rect(600, 600, 100, 20));
   rects.push(new Rect(700, 600, 100, 20));
   rects.push(new Rect(400, 300, 20, 300));
   rects.push(new Rect(800, 300, 20, 300));
   rects.push(new Rect(420, 540, 40, 20));
-  rects.push(new Rect(400, 280, 400, 20));
+  rects.push(new Rect(400, 280, 400, 20));*/
 
   window.addEventListener("mousemove", function (e) {
     mouse.x = e.x;
     mouse.y = e.y;
   })
 
-  runIntervall = window.setInterval(run, 1000);
+  //runIntervall = window.setInterval(run, 1000);
 
   document.addEventListener("keydown", (e: KeyboardEvent) => {
     const a = 10;
-    switch (e.key) {
-      case "ArrowLeft":
-        player.dx -= a;
-        break;
+    const player = players[0];
+    if (player) {
+      switch (e.key) {
+        case "ArrowLeft":
+          player.dx -= a;
+          break;
 
-      case "ArrowRight":
-        player.dx += a;
-        break;
+        case "ArrowRight":
+          player.dx += a;
+          break;
 
-      case "ArrowUp":
-        player.dy -= a;
-        break;
+        case "ArrowUp":
+          player.dy -= a;
+          break;
 
-      case "ArrowDown":
-        player.dy += a;
-        break;
+        case "ArrowDown":
+          player.dy += a;
+          break;
+      }
     }
   })
 
