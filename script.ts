@@ -1,6 +1,7 @@
 //import { Vec2 } from "./vector";
 import { Player } from "./classes/Player.js";
 import { Rect } from "./classes/Rect.js";
+import { borderWalls, tests } from "./tests.js";
 import { Vec2d } from "./classes/Vec2d.js";
 //import { collisionHandlerStatic , sweptAABBDynamic } from "./collision.js";
 import { create_broadphasebox, game_collision } from "./collision.js";
@@ -15,19 +16,64 @@ let rects: Array<Rect> = [];
 //let posQueue: Array<Vec2d> = [];
 let bot = new Player(600, 400, 40, 40, 1, 0.5, /*new Vec2(600,400), new Vec2(40,40), new Vec2(1,0.5)*/);
 
-
 export let players: Array<Player> = [];
 players.push(player); players.push(bot);
 players.push(new Player(450, 400, 40, 40, -1, 1));
 
+let runIntervall: number = 0;
+
+
+function runTest(name: string) {
+
+  if (runIntervall) {
+    clearInterval(runIntervall);
+    runIntervall = 0;
+  }
+
+  players = [];
+  rects = [];
+
+  const s=  50; 
+  
+
+  const t = tests.filter(t => t.name === name)[0];
+  if (t) {
+    for (const p of t.players) {
+      players.push(new Player(p.x, p.y, 40, 40, p.dx* s, p.dy* s))
+    }
+    for (const r of t.walls) {
+      rects.push(new Rect(r.x, r.y, r.w, r.h))
+    }
+    for (const r of borderWalls) {
+      rects.push(new Rect(r.x, r.y, r.w, r.h))
+    }
+  }
+  window.setInterval(run, 1000)
+
+}
+
 window.onload = () => {
+
+const buttons = <HTMLDivElement>window.document.getElementById("buttons");
+if (buttons) {
+  for (const t of tests) {
+    const b = document.createElement("button");
+    b.textContent = t.name;
+    b.onclick = () => {
+      runTest(t.name);
+    }
+    buttons.appendChild(b);
+  }
+}
+
+
   canvas = <HTMLCanvasElement>document.getElementById('cnvs');
   let ctx1 = canvas.getContext("2d");
   if (ctx1) ctx = ctx1;
   else throw ("no context");
 
-  ctx.canvas.width = window.innerWidth;
-  ctx.canvas.height = window.innerHeight;
+  ctx.canvas.width = 600;
+  ctx.canvas.height = 600;
 
   //rects.push(new Rect(0,800,100,20));
   rects.push(new Rect(400, 600, 100, 20));
@@ -44,7 +90,7 @@ window.onload = () => {
     mouse.y = e.y;
   })
 
-  window.setInterval(run, 1000);
+  runIntervall = window.setInterval(run, 1000);
 
   document.addEventListener("keydown", (e: KeyboardEvent) => {
     const a = 10;
@@ -71,10 +117,8 @@ window.onload = () => {
 }
 
 function run() {
-//  player.dx = (mouse.x - player.x) / 10;
- // player.dy = (mouse.y - player.y) / 10;
-
-
+  //  player.dx = (mouse.x - player.x) / 10;
+  // player.dy = (mouse.y - player.y) / 10;
 
   /*
   for(const player of players)
@@ -129,8 +173,8 @@ function render() {
     ctx.strokeRect(bb.x, bb.y, bb.w, bb.h);
 
     ctx.font = '20px serif';
-    ctx.fillStyle ="white";
-    ctx.fillText((i+1).toString(), player.x + player.w / 2 - 5, player.y  + player.h / 2 + 5)
+    ctx.fillStyle = "white";
+    ctx.fillText((i + 1).toString(), player.x + player.w / 2 - 5, player.y + player.h / 2 + 5)
   }
 
   requestAnimationFrame(render);
