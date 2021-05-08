@@ -114,8 +114,9 @@ function run() {
     */
     game_collision(players, rects);
     for (const player of players) {
-        player.x += player.dx;
-        player.y += player.dy;
+        player.x += player.dx * player.remainingTime;
+        player.y += player.dy * player.remainingTime;
+        player.remainingTime = 1;
     }
 }
 function render() {

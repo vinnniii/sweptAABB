@@ -99,10 +99,10 @@ function swept_AABB_dynamic(p1, p2) {
 }
 function get_collisions(players, player, rects) {
     let collisions = [];
-    let box_i = create_broadphasebox(player);
+    let box_i = create_broadphasebox({ x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx * player.remainingTime, dy: player.dy * player.remainingTime });
     for (let i = 0; i < rects.length; i++) {
         if (aabb_overlap(box_i, rects[i])) {
-            let collision = swept_AABB(player, rects[i]);
+            let collision = swept_AABB({ x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx * player.remainingTime, dy: player.dy * player.remainingTime }, rects[i]);
             if (collision) {
                 let c = new Collision(player, rects[i], collision.normal, collision.entryTime);
                 collisions.push(c);
@@ -110,9 +110,9 @@ function get_collisions(players, player, rects) {
         }
     }
     for (let j = 0; j < players.length; j++) {
-        let box_j = create_broadphasebox(players[j]);
+        let box_j = create_broadphasebox({ x: players[j].x, y: players[j].y, w: players[j].w, h: players[j].h, dx: players[j].dx * players[j].remainingTime, dy: players[j].dy * players[j].remainingTime });
         if (aabb_overlap(box_i, box_j)) {
-            let collision = swept_AABB_dynamic(player, players[j]);
+            let collision = swept_AABB_dynamic({ x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx * player.remainingTime, dy: player.dy * player.remainingTime }, { x: players[j].x, y: players[j].y, w: players[j].w, h: players[j].h, dx: players[j].dx * players[j].remainingTime, dy: players[j].dy * players[j].remainingTime });
             if (collision) {
                 let c = new Collision(player, players[j], collision.normal, collision.entryTime);
                 collisions.push(c);
@@ -123,29 +123,35 @@ function get_collisions(players, player, rects) {
 }
 function resolve_collision(collision) {
     let r_time = 1 - collision.entryTime;
-    if (collision.obj_1 instanceof Player && collision.obj_2 instanceof Player) {
-        collision.obj_1.remainingTime -= r_time;
+    collision.obj_1.remainingTime -= collision.entryTime;
+    if (collision.obj_2 instanceof Player) {
         let dx1 = collision.obj_1.dx;
         let dx2 = collision.obj_2.dx;
         let dy1 = collision.obj_1.dy;
         let dy2 = collision.obj_2.dy;
-        collision.obj_1.x -= collision.obj_1.dx * r_time;
+        /*collision.obj_1.x -= collision.obj_1.dx * r_time;
         collision.obj_1.y -= collision.obj_1.dy * r_time;
+    
         collision.obj_2.x -= collision.obj_2.dx * r_time;
-        collision.obj_2.y -= collision.obj_2.dy * r_time;
+        collision.obj_2.y -= collision.obj_2.dy * r_time;*/
+        collision.obj_1.x += collision.obj_1.dx * collision.entryTime;
+        collision.obj_1.y += collision.obj_1.dy * collision.entryTime;
+        collision.obj_2.x += collision.obj_2.dx * collision.entryTime;
+        collision.obj_2.y += collision.obj_2.dy * collision.entryTime;
         collision.obj_1.dx = dx2;
         collision.obj_1.dy = dy2;
         collision.obj_2.dx = dx1;
         collision.obj_2.dy = dy1;
     }
-    else if (collision.obj_1 instanceof Player && collision.obj_2 instanceof Rect) {
-        if (collision.normal.x != 0)
-            collision.obj_1.dx -= collision.obj_1.dx * r_time;
-        if (collision.normal.y != 0)
-            collision.obj_1.dy -= collision.obj_1.dy * r_time;
-    }
     else {
-        throw ("resolve_collision  need to players or a player and a rect");
+        collision.obj_1.x += collision.obj_1.dx * collision.entryTime;
+        collision.obj_1.y += collision.obj_1.dy * collision.entryTime;
+        if (collision.normal.x != 0)
+            collision.obj_1.dx = 0;
+        else
+            collision.obj_1.dy = 0;
+        /*if (collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
+        if (collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;*/
     }
 }
 function adjust_velocity(collision) {
@@ -186,5 +192,9 @@ export function game_collision(players, rects) {
     for (let i = 0; i < players.length; i++) {
         //handle_collision(players, players[i], rects, i + 1);
         handle_collision_recursive(players, players[i], rects, null);
+    }
+    for (let i = 0; i < players.length; i++) {
+        if (players[i].remainingTime < 1)
+            handle_collision_recursive(players, players[i], rects, null);
     }
 }
