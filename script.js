@@ -4,149 +4,107 @@ import { Rect } from "./classes/Rect.js";
 import { Vec2d } from "./classes/Vec2d.js";
 //import { collisionHandlerStatic , sweptAABBDynamic } from "./collision.js";
 import { create_broadphasebox, game_collision } from "./collision.js";
-
-
-let canvas: HTMLCanvasElement;
-let ctx: CanvasRenderingContext2D;
-
+let canvas;
+let ctx;
 let mouse = new Vec2d(0, 0);
-let player = new Player(500, 400, 40, 40, 0, 0,/* new Vec2(500,400), new Vec2(40,40), new Vec2(0,0)*/);
-let rects: Array<Rect> = [];
+let player = new Player(500, 400, 40, 40, 0, 0);
+let rects = [];
 //let posQueue: Array<Vec2d> = [];
-let bot = new Player(600, 400, 40, 40, 1, 0.5, /*new Vec2(600,400), new Vec2(40,40), new Vec2(1,0.5)*/);
-
-
-export let players: Array<Player> = [];
-players.push(player); players.push(bot);
+let bot = new Player(600, 400, 40, 40, 1, 0.5);
+export let players = [];
+players.push(player);
+players.push(bot);
 players.push(new Player(450, 400, 40, 40, -1, 1));
-
 window.onload = () => {
-  canvas = <HTMLCanvasElement>document.getElementById('cnvs');
-  let ctx1 = canvas.getContext("2d");
-  if (ctx1) ctx = ctx1;
-  else throw ("no context");
-
-  ctx.canvas.width = window.innerWidth;
-  ctx.canvas.height = window.innerHeight;
-
-  //rects.push(new Rect(0,800,100,20));
-  rects.push(new Rect(400, 600, 100, 20));
-  rects.push(new Rect(500, 600, 100, 20));
-  rects.push(new Rect(600, 600, 100, 20));
-  rects.push(new Rect(700, 600, 100, 20));
-  rects.push(new Rect(400, 300, 20, 300));
-  rects.push(new Rect(800, 300, 20, 300));
-  rects.push(new Rect(420, 540, 40, 20));
-  rects.push(new Rect(400, 280, 400, 20));
-
-  window.addEventListener("mousemove", function (e) {
-    mouse.x = e.x;
-    mouse.y = e.y;
-  })
-
-  window.setInterval(run, 1000);
-
-  document.addEventListener("keydown", (e: KeyboardEvent) => {
-    const a = 10;
-    switch (e.key) {
-      case "ArrowLeft":
-        player.dx -= a;
-        break;
-
-      case "ArrowRight":
-        player.dx += a;
-        break;
-
-      case "ArrowUp":
-        player.dy -= a;
-        break;
-
-      case "ArrowDown":
-        player.dy += a;
-        break;
-    }
-  })
-
-  render();
-}
-
+    canvas = document.getElementById('cnvs');
+    let ctx1 = canvas.getContext("2d");
+    if (ctx1)
+        ctx = ctx1;
+    else
+        throw ("no context");
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerHeight;
+    //rects.push(new Rect(0,800,100,20));
+    rects.push(new Rect(400, 600, 100, 20));
+    rects.push(new Rect(500, 600, 100, 20));
+    rects.push(new Rect(600, 600, 100, 20));
+    rects.push(new Rect(700, 600, 100, 20));
+    rects.push(new Rect(400, 300, 20, 300));
+    rects.push(new Rect(800, 300, 20, 300));
+    rects.push(new Rect(420, 540, 40, 20));
+    rects.push(new Rect(400, 280, 400, 20));
+    window.addEventListener("mousemove", function (e) {
+        mouse.x = e.x;
+        mouse.y = e.y;
+    });
+    window.setInterval(run, 1000);
+    document.addEventListener("keydown", (e) => {
+        const a = 10;
+        switch (e.key) {
+            case "ArrowLeft":
+                player.dx -= a;
+                break;
+            case "ArrowRight":
+                player.dx += a;
+                break;
+            case "ArrowUp":
+                player.dy -= a;
+                break;
+            case "ArrowDown":
+                player.dy += a;
+                break;
+        }
+    });
+    render();
+};
 function run() {
-//  player.dx = (mouse.x - player.x) / 10;
- // player.dy = (mouse.y - player.y) / 10;
-
-
-
-  /*
-  for(const player of players)
-  {
-      collisionHandlerStatic(player, rects);
-  }
-
+    //  player.dx = (mouse.x - player.x) / 10;
+    // player.dy = (mouse.y - player.y) / 10;
+    /*
+    for(const player of players)
+    {
+        collisionHandlerStatic(player, rects);
+    }
   
-  for(const player of players)
-  {
-      sweptAABBDynamic(player, bot);
-  }
-
-  for(const player of players)
-  {
-      collisionHandlerStatic(player, rects);
-  }
-  */
-
-  game_collision(players, rects);
-
-  for (const player of players) {
-
-    player.x += player.dx;
-    player.y += player.dy;
-
-  }
-
-
+    
+    for(const player of players)
+    {
+        sweptAABBDynamic(player, bot);
+    }
+  
+    for(const player of players)
+    {
+        collisionHandlerStatic(player, rects);
+    }
+    */
+    game_collision(players, rects);
+    for (const player of players) {
+        player.x += player.dx;
+        player.y += player.dy;
+    }
 }
-
 function render() {
-  ctx.fillStyle = "blue";
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-  for (const rect of rects) {
-
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
-  }
-
-  for (const [i, player] of players.entries()) {
-
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(player.x, player.y, player.w, player.h);
-
-    const bb = create_broadphasebox(player);
-    ctx.strokeStyle = "red"; //"rgba(255,255,255,0.3)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(bb.x, bb.y, bb.w, bb.h);
-
-    ctx.font = '20px serif';
-    ctx.fillStyle ="white";
-    ctx.fillText((i+1).toString(), player.x + player.w / 2 - 5, player.y  + player.h / 2 + 5)
-  }
-
-  requestAnimationFrame(render);
-
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    for (const rect of rects) {
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    }
+    for (const [i, player] of players.entries()) {
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(player.x, player.y, player.w, player.h);
+        const bb = create_broadphasebox(player);
+        ctx.strokeStyle = "red"; //"rgba(255,255,255,0.3)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bb.x, bb.y, bb.w, bb.h);
+        ctx.font = '20px serif';
+        ctx.fillStyle = "white";
+        ctx.fillText((i + 1).toString(), player.x + player.w / 2 - 5, player.y + player.h / 2 + 5);
+    }
+    requestAnimationFrame(render);
 }
-
-
-
-
-
-
-
-
-
-
-
 // vector.ts
 /*
 export class Vec2 {
@@ -219,9 +177,7 @@ export class Vec2 {
 
 }
 */
-
 // SWEPT using Vec2
-
 /*import { Player } from "./script";
 import { Vec2 } from "./vector";
 
@@ -319,4 +275,4 @@ export function swept(p: Player, b: iStatic) : {entryTime: number, normal: Vec2}
     return {normal: normal, entryTime: entryTime};
 
 }
-*/
+*/ 

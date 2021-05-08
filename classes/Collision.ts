@@ -1,24 +1,26 @@
+import { Player } from "./Player.js";
+import { Rect } from "./Rect.js";
 import { Vec2d } from "./Vec2d.js";
 
 export class Collision {
 
-    obj_1:any;
-    obj_2:any;
+  obj_1: Player | Rect;
+  obj_2: Player | Rect;
 
-    normal:Vec2d;
-    
-    entryTime:number;
+  normal: Vec2d;
 
-    constructor(obj_1:any, obj_2:any, normal:Vec2d, entryTime:number) {
+  entryTime: number;
 
-        this.obj_1 = obj_1;
-        this.obj_2 = obj_2;
+  constructor(obj_1: Player | Rect, obj_2: Player | Rect, normal: Vec2d, entryTime: number) {
 
-        this.normal = normal;
+    this.obj_1 = obj_1;
+    this.obj_2 = obj_2;
 
-        this.entryTime = entryTime;
+    this.normal = normal;
+
+    this.entryTime = entryTime;
 
 
-    }
+  }
 
 }
