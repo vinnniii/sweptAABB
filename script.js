@@ -8,14 +8,13 @@ import { create_broadphasebox, game_collision } from "./collision.js";
 let canvas;
 let ctx;
 let mouse = new Vec2d(0, 0);
-let player = new Player(500, 400, 40, 40, 0, 0);
+//let player = new Player(500, 400, 40, 40, 0, 0,/* new Vec2(500,400), new Vec2(40,40), new Vec2(0,0)*/);
 let rects = [];
 //let posQueue: Array<Vec2d> = [];
-let bot = new Player(600, 400, 40, 40, 1, 0.5);
+//let bot = new Player(600, 400, 40, 40, 1, 0.5, /*new Vec2(600,400), new Vec2(40,40), new Vec2(1,0.5)*/);
 export let players = [];
-players.push(player);
-players.push(bot);
-players.push(new Player(450, 400, 40, 40, -1, 1));
+//players.push(player); players.push(bot);
+//players.push(new Player(450, 400, 40, 40, -1, 1));
 let runIntervall = 0;
 function runTest(name) {
     if (runIntervall) {
@@ -24,7 +23,7 @@ function runTest(name) {
     }
     players = [];
     rects = [];
-    const s = 50;
+    const s = parseFloat(document.getElementById("speed").value);
     const t = tests.filter(t => t.name === name)[0];
     if (t) {
         for (const p of t.players) {
@@ -37,7 +36,19 @@ function runTest(name) {
             rects.push(new Rect(r.x, r.y, r.w, r.h));
         }
     }
-    window.setInterval(run, 1000);
+    let interval = 100;
+    switch (s) {
+        case 10:
+            interval = 400;
+            break;
+        case 50:
+            interval = 1000;
+            break;
+        case 100:
+            interval = 1000;
+            break;
+    }
+    window.setInterval(run, interval);
 }
 window.onload = () => {
     const buttons = window.document.getElementById("buttons");
@@ -60,34 +71,37 @@ window.onload = () => {
     ctx.canvas.width = 600;
     ctx.canvas.height = 600;
     //rects.push(new Rect(0,800,100,20));
-    rects.push(new Rect(400, 600, 100, 20));
+    /*rects.push(new Rect(400, 600, 100, 20));
     rects.push(new Rect(500, 600, 100, 20));
     rects.push(new Rect(600, 600, 100, 20));
     rects.push(new Rect(700, 600, 100, 20));
     rects.push(new Rect(400, 300, 20, 300));
     rects.push(new Rect(800, 300, 20, 300));
     rects.push(new Rect(420, 540, 40, 20));
-    rects.push(new Rect(400, 280, 400, 20));
+    rects.push(new Rect(400, 280, 400, 20));*/
     window.addEventListener("mousemove", function (e) {
         mouse.x = e.x;
         mouse.y = e.y;
     });
-    runIntervall = window.setInterval(run, 1000);
+    //runIntervall = window.setInterval(run, 1000);
     document.addEventListener("keydown", (e) => {
         const a = 10;
-        switch (e.key) {
-            case "ArrowLeft":
-                player.dx -= a;
-                break;
-            case "ArrowRight":
-                player.dx += a;
-                break;
-            case "ArrowUp":
-                player.dy -= a;
-                break;
-            case "ArrowDown":
-                player.dy += a;
-                break;
+        const player = players[0];
+        if (player) {
+            switch (e.key) {
+                case "ArrowLeft":
+                    player.dx -= a;
+                    break;
+                case "ArrowRight":
+                    player.dx += a;
+                    break;
+                case "ArrowUp":
+                    player.dy -= a;
+                    break;
+                case "ArrowDown":
+                    player.dy += a;
+                    break;
+            }
         }
     });
     render();
