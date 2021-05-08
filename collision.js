@@ -126,8 +126,8 @@ function resolve_collision(collision) {
     collision.obj_1.remainingTime -= collision.entryTime;
     if (collision.obj_2 instanceof Player) {
         let dx1 = collision.obj_1.dx;
-        let dx2 = collision.obj_2.dx;
         let dy1 = collision.obj_1.dy;
+        let dx2 = collision.obj_2.dx;
         let dy2 = collision.obj_2.dy;
         /*collision.obj_1.x -= collision.obj_1.dx * r_time;
         collision.obj_1.y -= collision.obj_1.dy * r_time;
@@ -138,10 +138,10 @@ function resolve_collision(collision) {
         collision.obj_1.y += collision.obj_1.dy * collision.entryTime;
         collision.obj_2.x += collision.obj_2.dx * collision.entryTime;
         collision.obj_2.y += collision.obj_2.dy * collision.entryTime;
-        collision.obj_1.dx = dx2;
-        collision.obj_1.dy = dy2;
-        collision.obj_2.dx = dx1;
-        collision.obj_2.dy = dy1;
+        collision.obj_1.dx = ((dx2 - dx1) / 2 + dx1 + dx2) / 2;
+        collision.obj_1.dy = ((dy2 - dy1) / 2 + dy1 + dy2) / 2;
+        collision.obj_2.dx = ((dx1 - dx2) / 2 + dx1 + dx2) / 2;
+        collision.obj_2.dy = ((dy1 - dy2) / 2 + dy1 + dy2) / 2;
     }
     else {
         collision.obj_1.x += collision.obj_1.dx * collision.entryTime;
