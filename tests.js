@@ -13,6 +13,15 @@ export const tests = [
             { x: 580, y: 580, dx: -1, dy: -1 }
         ],
         walls: []
+    },
+    {
+        name: "I can go into you",
+        autoStart: true,
+        players: [
+            { x: 509, y: 555, dx: 100, dy: 0 },
+            { x: 550, y: 555, dx: 0, dy: 0 },
+        ],
+        walls: []
     }
 ];
 /*

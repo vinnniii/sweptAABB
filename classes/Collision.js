@@ -5,4 +5,9 @@ export class Collision {
         this.normal = normal;
         this.entryTime = entryTime;
     }
+    log() {
+        console.log("COLLISION Entry-Time=" + this.entryTime);
+        this.obj_1.log();
+        this.obj_2.log();
+    }
 }

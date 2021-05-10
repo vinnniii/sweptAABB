@@ -39,8 +39,9 @@ function runTest(name: string) {
 
   const t = tests.filter(t => t.name === name)[0];
   if (t) {
+    let nr = 1;
     for (const p of t.players) {
-      players.push(new Player(p.x, p.y, 40, 40, p.dx * s, p.dy * s))
+      players.push(new Player(nr++,p.x, p.y, 40, 40, p.dx * s, p.dy * s))
     }
     for (const r of t.walls) {
       rects.push(new Rect(r.x, r.y, r.w, r.h))
@@ -71,6 +72,9 @@ window.onload = () => {
         runTest(t.name);
       }
       buttons.appendChild(b);
+      if (t.autoStart) {
+        runTest(t.name)
+      }
     }
   }
 

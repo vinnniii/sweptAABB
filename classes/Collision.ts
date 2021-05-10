@@ -23,4 +23,9 @@ export class Collision {
 
   }
 
+  log() {
+    console.log("COLLISION Entry-Time="  + this.entryTime);
+    this.obj_1.log();
+    this.obj_2.log();
+  }
 }

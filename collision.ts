@@ -145,15 +145,15 @@ function swept_AABB_dynamic(p1: iDynamicCollisonObj, p2: iDynamicCollisonObj): {
 
 function get_collisions(players: Array<Player>, player: Player, rects: Array<Rect>): Array<Collision> {
   let collisions: Array<Collision> = [];
-  
-  let box_i = create_broadphasebox({x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx*player.remainingTime, dy: player.dy*player.remainingTime});
+
+  let box_i = create_broadphasebox({ x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx * player.remainingTime, dy: player.dy * player.remainingTime });
 
 
   for (let i = 0; i < rects.length; i++) {
 
     if (aabb_overlap(box_i, rects[i])) {
 
-      let collision = swept_AABB({x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx*player.remainingTime, dy: player.dy*player.remainingTime}, rects[i]);
+      let collision = swept_AABB({ x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx * player.remainingTime, dy: player.dy * player.remainingTime }, rects[i]);
 
       if (collision) {
 
@@ -167,12 +167,12 @@ function get_collisions(players: Array<Player>, player: Player, rects: Array<Rec
 
   for (let j = 0; j < players.length; j++) {
 
-    let box_j = create_broadphasebox({x: players[j].x, y: players[j].y, w: players[j].w, h: players[j].h, dx: players[j].dx*players[j].remainingTime, dy: players[j].dy*players[j].remainingTime});
+    let box_j = create_broadphasebox({ x: players[j].x, y: players[j].y, w: players[j].w, h: players[j].h, dx: players[j].dx * players[j].remainingTime, dy: players[j].dy * players[j].remainingTime });
 
     if (aabb_overlap(box_i, box_j)) {
 
-      let collision = swept_AABB_dynamic({x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx*player.remainingTime, dy: player.dy*player.remainingTime}, 
-        {x: players[j].x, y: players[j].y, w: players[j].w, h: players[j].h, dx: players[j].dx*players[j].remainingTime, dy: players[j].dy*players[j].remainingTime});
+      let collision = swept_AABB_dynamic({ x: player.x, y: player.y, w: player.w, h: player.h, dx: player.dx * player.remainingTime, dy: player.dy * player.remainingTime },
+        { x: players[j].x, y: players[j].y, w: players[j].w, h: players[j].h, dx: players[j].dx * players[j].remainingTime, dy: players[j].dy * players[j].remainingTime });
 
       if (collision) {
 
@@ -187,14 +187,25 @@ function get_collisions(players: Array<Player>, player: Player, rects: Array<Rec
   return collisions;
 }
 
-function resolve_collision(collision: Collision) 
-{
-  let r_time: number = 1 - collision.entryTime;
-  collision.obj_1.remainingTime -= collision.entryTime;
+function setRemainingTime(collision: Collision, player: Player) {
+  // wenn keine bewegung auf der kollisionsachse dann die entry time nicht gleichsetzen
+  if (collision.normal.x !== 0 && player.dx !== 0) {
+    player.remainingTime -= collision.entryTime;
+  }
+  if (collision.normal.y !== 0 && player.dy !== 0) {
+    player.remainingTime -= collision.entryTime;
+  }
+}
+function resolve_collision(collision: Collision) {
 
+  setRemainingTime(collision, collision.obj_1);
+
+
+  console.log("RESOLVE ------------------------")
   if (collision.obj_2 instanceof Player) {
 
-    collision.obj_2.remainingTime -= collision.entryTime;
+    setRemainingTime(collision, collision.obj_2)
+
 
     let dx1 = collision.obj_1.dx;
     let dy1 = collision.obj_1.dy;
@@ -213,24 +224,27 @@ function resolve_collision(collision: Collision)
     collision.obj_2.y += collision.obj_2.dy * collision.entryTime;
 
 
-    collision.obj_1.dx = ((dx2-dx1)/2+dx1+dx2)/2; 
-    collision.obj_1.dy = ((dy2-dy1)/2+dy1+dy2)/2; 
-    collision.obj_2.dx = ((dx1-dx2)/2+dx1+dx2)/2; 
-    collision.obj_2.dy = ((dy1-dy2)/2+dy1+dy2)/2; 
+    collision.obj_1.dx = ((dx2 - dx1) / 2 + dx1 + dx2) / 2;
+    collision.obj_1.dy = ((dy2 - dy1) / 2 + dy1 + dy2) / 2;
+    collision.obj_2.dx = ((dx1 - dx2) / 2 + dx1 + dx2) / 2;
+    collision.obj_2.dy = ((dy1 - dy2) / 2 + dy1 + dy2) / 2;
 
-  } 
+  }
   else {
 
     collision.obj_1.x += collision.obj_1.dx * collision.entryTime;
     collision.obj_1.y += collision.obj_1.dy * collision.entryTime;
 
-    if(collision.normal.x != 0) collision.obj_1.dx = 0;
+    if (collision.normal.x != 0) collision.obj_1.dx = 0;
     else collision.obj_1.dy = 0;
 
     /*if (collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
     if (collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;*/
 
-  } 
+  }
+
+  collision.log();
+  console.log("---------------------------------------------------")
 
 }
 
@@ -272,16 +286,18 @@ export function handle_collision_recursive(players: Array<Player>, player: Playe
 
   collisions.sort((a, b) => (a.entryTime < b.entryTime ? -1 : 1));
 
+  collisions[0].log()
+
   if (collisions[0].obj_2 instanceof Player) {
     // Test Collision with other Dynamic Object first before resolution.
 
-    if(collisions[0].obj_2 === collider)
+    if (collisions[0].obj_2 === collider)
       resolve_collision(collisions[0])
 
-    else 
+    else
       handle_collision_recursive(players, collisions[0].obj_2, rects, player);
 
-  } 
+  }
   else {
 
     resolve_collision(collisions[0]);
@@ -308,7 +324,7 @@ export function game_collision(players: Array<Player>, rects: Array<Rect>) {
 
   for (let i = 0; i < players.length; i++) {
 
-    if(players[i].remainingTime < 1)
+    if (players[i].remainingTime < 1)
       handle_collision_recursive(players, players[i], rects, null);
 
   }

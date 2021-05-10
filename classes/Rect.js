@@ -5,4 +5,7 @@ export class Rect {
         this.w = w;
         this.h = h;
     }
+    log() {
+        console.log("Rect X=" + this.x + " Y=" + this.y + " W=" + this.w + " H=" + this.h, this);
+    }
 }

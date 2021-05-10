@@ -2,7 +2,8 @@ export class Player {
     //pos: Vec2;
     //dim: Vec2;
     //vel: Vec2;
-    constructor(x, y, w, h, dx, dy) {
+    constructor(nr, x, y, w, h, dx, dy) {
+        this.nr = nr;
         this.x = x;
         this.y = y;
         this.w = w;
@@ -20,5 +21,8 @@ export class Player {
         //this.pos = pos;
         //this.dim = dim;
         //this.vel = vel;
+    }
+    log() {
+        console.log("Player #" + this.nr, " X=" + this.x + " Y=" + this.y + " DX=" + this.dx + " DY=" + this.dy, this);
     }
 }

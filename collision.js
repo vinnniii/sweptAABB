@@ -121,11 +121,20 @@ function get_collisions(players, player, rects) {
     }
     return collisions;
 }
+function setRemainingTime(collision, player) {
+    // wenn keine bewegung auf der kollisionsachse dann die entry time nicht gleichsetzen
+    if (collision.normal.x !== 0 && player.dx !== 0) {
+        player.remainingTime -= collision.entryTime;
+    }
+    if (collision.normal.y !== 0 && player.dy !== 0) {
+        player.remainingTime -= collision.entryTime;
+    }
+}
 function resolve_collision(collision) {
-    let r_time = 1 - collision.entryTime;
-    collision.obj_1.remainingTime -= collision.entryTime;
+    setRemainingTime(collision, collision.obj_1);
+    console.log("RESOLVE ------------------------");
     if (collision.obj_2 instanceof Player) {
-        collision.obj_2.remainingTime -= collision.entryTime;
+        setRemainingTime(collision, collision.obj_2);
         let dx1 = collision.obj_1.dx;
         let dy1 = collision.obj_1.dy;
         let dx2 = collision.obj_2.dx;
@@ -154,6 +163,8 @@ function resolve_collision(collision) {
         /*if (collision.normal.x != 0) collision.obj_1.dx -= collision.obj_1.dx * r_time;
         if (collision.normal.y != 0) collision.obj_1.dy -= collision.obj_1.dy * r_time;*/
     }
+    collision.log();
+    console.log("---------------------------------------------------");
 }
 function adjust_velocity(collision) {
     if (collision.obj_1 instanceof Player && collision.obj_2 instanceof Player) {
@@ -177,6 +188,7 @@ export function handle_collision_recursive(players, player, rects, collider) {
     if (collisions.length === 0)
         return;
     collisions.sort((a, b) => (a.entryTime < b.entryTime ? -1 : 1));
+    collisions[0].log();
     if (collisions[0].obj_2 instanceof Player) {
         // Test Collision with other Dynamic Object first before resolution.
         if (collisions[0].obj_2 === collider)

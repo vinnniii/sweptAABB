@@ -5,6 +5,7 @@ export class Player {
   h: number;
   dx: number;
   dy: number;
+  nr: number;
 
   remainingTime: number;
 
@@ -22,7 +23,8 @@ export class Player {
   //dim: Vec2;
   //vel: Vec2;
 
-  constructor(x: number, y: number, w: number, h: number, dx: number, dy: number, /*pos: Vec2, dim: Vec2, vel: Vec2*/) {
+  constructor(nr: number, x: number, y: number, w: number, h: number, dx: number, dy: number, /*pos: Vec2, dim: Vec2, vel: Vec2*/) {
+    this.nr = nr;
     this.x = x;
     this.y = y;
     this.w = w;
@@ -40,5 +42,10 @@ export class Player {
     //this.pos = pos;
     //this.dim = dim;
     //this.vel = vel;
+  }
+
+
+  log()  {
+    console.log("Player #" + this.nr, " X=" + this.x + " Y=" + this.y + " DX=" + this.dx + " DY=" + this.dy, this)
   }
 }
