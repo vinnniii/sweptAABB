@@ -194,6 +194,8 @@ function resolve_collision(collision: Collision)
 
   if (collision.obj_2 instanceof Player) {
 
+    collision.obj_2.remainingTime -= collision.entryTime;
+
     let dx1 = collision.obj_1.dx;
     let dy1 = collision.obj_1.dy;
     let dx2 = collision.obj_2.dx;
@@ -264,7 +266,7 @@ export function handle_collision_recursive(players: Array<Player>, player: Playe
   let collisions: Array<Collision> = get_collisions(players, player, rects);
 
 
-  if (collisions.length == 0)
+  if (collisions.length === 0)
     return;
 
 
@@ -276,7 +278,8 @@ export function handle_collision_recursive(players: Array<Player>, player: Playe
     if(collisions[0].obj_2 === collider)
       resolve_collision(collisions[0])
 
-    else handle_collision_recursive(players, collisions[0].obj_2, rects, player);
+    else 
+      handle_collision_recursive(players, collisions[0].obj_2, rects, player);
 
   } 
   else {

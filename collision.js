@@ -125,6 +125,7 @@ function resolve_collision(collision) {
     let r_time = 1 - collision.entryTime;
     collision.obj_1.remainingTime -= collision.entryTime;
     if (collision.obj_2 instanceof Player) {
+        collision.obj_2.remainingTime -= collision.entryTime;
         let dx1 = collision.obj_1.dx;
         let dy1 = collision.obj_1.dy;
         let dx2 = collision.obj_2.dx;
@@ -173,7 +174,7 @@ export function handle_collision(players, player, rects, index) {
 }
 export function handle_collision_recursive(players, player, rects, collider) {
     let collisions = get_collisions(players, player, rects);
-    if (collisions.length == 0)
+    if (collisions.length === 0)
         return;
     collisions.sort((a, b) => (a.entryTime < b.entryTime ? -1 : 1));
     if (collisions[0].obj_2 instanceof Player) {

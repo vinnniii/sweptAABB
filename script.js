@@ -107,8 +107,8 @@ window.onload = () => {
     render();
 };
 function run() {
-    //  player.dx = (mouse.x - player.x) / 10;
-    // player.dy = (mouse.y - player.y) / 10;
+    //players[0].dx += (mouse.x - players[0].x) / 1000;
+    //players[0].dy += (mouse.y - players[0].y) / 1000;
     /*
     for(const player of players)
     {
